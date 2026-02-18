@@ -15,8 +15,8 @@
     --cyan: #00d4ff;
     --cyan-dim: #004d5e;
     --red: #ff3c3c;
+    --green: #4cff8f;
     --text-dim: #3a6070;
-    --version: v0.1;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -62,10 +62,10 @@
     padding: 2px 0;
   }
 
-  /* ── BIG BEARING NUMBER — full viewport width ── */
+  /* ── BIG BEARING ── */
   .bearing-hero {
     width: 100vw;
-    margin-left: calc(-12px);  /* bleed past container padding */
+    margin-left: -12px;
     text-align: center;
     line-height: 0.95;
     padding: 4px 0;
@@ -87,7 +87,7 @@
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 12px 16px 12px;
+    padding: 12px 16px;
     position: relative;
     overflow: hidden;
   }
@@ -105,17 +105,20 @@
     background: linear-gradient(90deg, transparent, var(--cyan), transparent);
   }
 
+  .panel.green-accent::before {
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+  }
+
   .label {
     font-size: 0.5rem;
     letter-spacing: 0.4em;
     color: var(--text-dim);
     text-transform: uppercase;
     margin-bottom: 8px;
-    font-family: 'Roboto Mono', monospace;
     text-align: center;
   }
 
-  /* ── COMPASS + CARDINAL side by side ── */
+  /* ── COMPASS ── */
   .compass-row {
     display: flex;
     align-items: center;
@@ -123,11 +126,7 @@
     gap: 20px;
   }
 
-  .compass-dial {
-    width: 140px;
-    height: 140px;
-    flex-shrink: 0;
-  }
+  .compass-dial { width: 140px; height: 140px; flex-shrink: 0; }
   .compass-dial svg { width: 100%; height: 100%; }
 
   .compass-info {
@@ -153,19 +152,8 @@
     text-transform: uppercase;
   }
 
-  .acc-bar {
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    margin-top: 10px;
-    overflow: hidden;
-  }
-  .acc-fill {
-    height: 100%;
-    background: #4cff8f;
-    border-radius: 2px;
-    transition: width 0.5s ease;
-  }
+  .acc-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .acc-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.5s ease; }
 
   #needle {
     transform-origin: 50% 50%;
@@ -186,12 +174,74 @@
     display: block;
   }
 
-  .speed-unit {
-    font-size: 0.65rem;
-    color: var(--cyan-dim);
-    letter-spacing: 0.4em;
-    margin-top: 4px;
+  .speed-unit { font-size: 0.65rem; color: var(--cyan-dim); letter-spacing: 0.4em; margin-top: 4px; }
+
+  /* ── RECORDING PANEL ── */
+  .record-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
   }
+
+  .record-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-transform: uppercase;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .record-btn:hover, .record-btn:active { background: var(--green); color: var(--bg); }
+
+  .record-btn.recording {
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .record-btn.recording:hover, .record-btn.recording:active {
+    background: var(--red);
+    color: var(--bg);
+  }
+
+  .record-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .record-status {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+  }
+
+  .record-status.active { color: var(--green); }
+
+  .record-points {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--amber);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tracks-link {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    text-decoration: none;
+    text-transform: uppercase;
+    opacity: 0.7;
+    align-self: flex-end;
+  }
+  .tracks-link:hover { opacity: 1; }
 
   /* ── STATUS ── */
   .status-row { display: flex; gap: 10px; }
@@ -205,16 +255,12 @@
     text-align: center;
   }
 
-  .status-val {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #aaa;
-  }
-  .status-val.good { color: #4cff8f; }
+  .status-val { font-size: 1rem; font-weight: 700; color: #aaa; }
+  .status-val.good { color: var(--green); }
   .status-val.warn { color: var(--amber); }
   .status-val.bad  { color: var(--red); }
 
-  /* ── VERSION FOOTER ── */
+  /* ── VERSION ── */
   .version-footer {
     text-align: center;
     font-size: 0.5rem;
@@ -236,7 +282,7 @@
 
   .overlay h2 { font-size: 1.1rem; letter-spacing: 0.2em; color: var(--cyan); }
   .overlay p  { font-size: 0.75rem; color: var(--text-dim); line-height: 1.6; max-width: 300px; }
-  .overlay .overlay-version { font-size: 0.5rem; letter-spacing: 0.3em; color: var(--text-dim); opacity: 0.5; margin-top: 8px; }
+  .overlay-version { font-size: 0.5rem; letter-spacing: 0.3em; color: var(--text-dim); opacity: 0.5; }
 
   .btn {
     background: transparent;
@@ -254,11 +300,7 @@
   @keyframes blink { 50% { opacity: 0; } }
   .hidden { display: none; }
 
-  .divider {
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border), transparent);
-  }
+  .divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
 </style>
 </head>
 <body>
@@ -266,7 +308,7 @@
 <!-- Launch overlay -->
 <div class="overlay" id="overlay">
   <h2>⚓ SAILING GPS</h2>
-  <p>This app needs your device's GPS to show heading and speed.<br>Tap below to grant location access.</p>
+  <p>This app needs your device's GPS to show heading and speed, and will save your track to the cloud.</p>
   <button class="btn" onclick="startGPS()">ENABLE GPS</button>
   <p id="err-msg" style="color:#ff3c3c;"></p>
   <div class="overlay-version">VERSION 0.1</div>
@@ -275,14 +317,14 @@
 <div class="container">
   <div class="header">⚓ SAILING INSTRUMENTS</div>
 
-  <!-- Full-width bearing number -->
+  <!-- Full-width bearing -->
   <div class="bearing-hero">
     <span class="bearing-hero-value" id="bearing">---</span>
   </div>
 
   <div class="divider"></div>
 
-  <!-- Compass + cardinal side by side -->
+  <!-- Compass + cardinal -->
   <div class="panel">
     <div class="label">COMPASS — COURSE OVER GROUND</div>
     <div class="compass-row">
@@ -319,6 +361,21 @@
     <div class="speed-unit">KM / HR</div>
   </div>
 
+  <div class="divider"></div>
+
+  <!-- Track recording -->
+  <div class="panel green-accent">
+    <div class="label">TRACK RECORDING</div>
+    <div class="record-panel">
+      <button class="record-btn" id="record-btn" onclick="toggleRecording()">⏺ START</button>
+      <div class="record-info">
+        <div class="record-status" id="record-status">NOT RECORDING</div>
+        <div class="record-points"><span id="point-count">0</span> PTS</div>
+      </div>
+      <a class="tracks-link" href="tracks.html">VIEW TRACKS →</a>
+    </div>
+  </div>
+
   <!-- Status -->
   <div class="status-row">
     <div class="status-item">
@@ -326,96 +383,196 @@
       <div class="status-val" id="accuracy">-- m</div>
     </div>
     <div class="status-item">
-      <div class="label">STATUS</div>
+      <div class="label">GPS</div>
       <div class="status-val blink" id="gps-status">WAIT</div>
+    </div>
+    <div class="status-item">
+      <div class="label">CLOUD</div>
+      <div class="status-val" id="db-status">--</div>
     </div>
   </div>
 
-  <!-- Version footer -->
   <div class="version-footer">VERSION 0.1</div>
 </div>
 
-<script>
-(function() {
-  const svg = document.querySelector('svg');
-  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-  for (let i = 0; i < 72; i++) {
-    const angle = i * 5;
-    const rad = (angle - 90) * Math.PI / 180;
-    const isMajor = i % 9 === 0, isMed = i % 3 === 0;
-    const r1 = 52, r2 = isMajor ? 42 : isMed ? 45 : 48;
-    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1', 60 + r1 * Math.cos(rad));
-    line.setAttribute('y1', 60 + r1 * Math.sin(rad));
-    line.setAttribute('x2', 60 + r2 * Math.cos(rad));
-    line.setAttribute('y2', 60 + r2 * Math.sin(rad));
-    line.setAttribute('stroke', isMajor ? '#f0a500' : '#2a4a5a');
-    line.setAttribute('stroke-width', isMajor ? '1.5' : '0.8');
-    g.appendChild(line);
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, doc, setDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCs3kFXZmQ59CUf9IkQ7UTPRcYi45hb9co",
+    authDomain: "sailing-gps.firebaseapp.com",
+    projectId: "sailing-gps",
+    storageBucket: "sailing-gps.firebasestorage.app",
+    messagingSenderId: "713152422055",
+    appId: "1:713152422055:web:a45a4cfc77f7375b047b82",
+    measurementId: "G-84LSZ2S9MG"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // ── GPS state ──
+  let watchId     = null;
+  let lastBearing = 0;
+  let lastPos     = null;
+
+  // ── Recording state ──
+  let recording    = false;
+  let sessionRef   = null;
+  let sessionId    = null;
+  let pointCount   = 0;
+
+  // ── Expose toggle to global scope ──
+  window.toggleRecording = async function() {
+    if (!recording) {
+      // Start a new session document
+      try {
+        sessionRef = doc(collection(db, 'sessions'));
+        sessionId  = sessionRef.id;
+        await setDoc(sessionRef, {
+          startedAt: serverTimestamp(),
+          pointCount: 0
+        });
+        recording   = true;
+        pointCount  = 0;
+        document.getElementById('point-count').textContent = '0';
+        document.getElementById('record-btn').textContent  = '⏹ STOP';
+        document.getElementById('record-btn').classList.add('recording');
+        const rs = document.getElementById('record-status');
+        rs.textContent = 'RECORDING';
+        rs.classList.add('active');
+        setDbStatus('OK', 'good');
+      } catch(e) {
+        setDbStatus('ERR', 'bad');
+        console.error(e);
+      }
+    } else {
+      // Stop recording — update session with end time and point count
+      recording = false;
+      try {
+        await setDoc(sessionRef, { endedAt: serverTimestamp(), pointCount }, { merge: true });
+      } catch(e) { console.error(e); }
+      document.getElementById('record-btn').textContent = '⏺ START';
+      document.getElementById('record-btn').classList.remove('recording');
+      const rs = document.getElementById('record-status');
+      rs.textContent = 'STOPPED';
+      rs.classList.remove('active');
+      setDbStatus('SAVED', 'good');
+      sessionRef = null;
+    }
+  };
+
+  async function savePoint(pos) {
+    if (!recording || !sessionRef) return;
+    try {
+      await addDoc(collection(db, 'sessions', sessionId, 'points'), {
+        lat:      pos.coords.latitude,
+        lng:      pos.coords.longitude,
+        heading:  pos.coords.heading,
+        speed:    pos.coords.speed,
+        accuracy: pos.coords.accuracy,
+        ts:       serverTimestamp()
+      });
+      pointCount++;
+      document.getElementById('point-count').textContent = pointCount;
+    } catch(e) {
+      setDbStatus('ERR', 'bad');
+      console.error(e);
+    }
   }
-  svg.insertBefore(g, document.getElementById('needle'));
-})();
 
-let watchId = null, lastBearing = 0;
-
-function toCardinal(deg) {
-  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-  return dirs[Math.round(deg / 22.5) % 16];
-}
-
-function rotateTo(deg) {
-  let diff = deg - lastBearing;
-  if (diff > 180) diff -= 360;
-  if (diff < -180) diff += 360;
-  lastBearing += diff;
-  document.getElementById('needle').style.transform = `rotate(${lastBearing}deg)`;
-}
-
-function onPosition(pos) {
-  document.getElementById('overlay').classList.add('hidden');
-  const { heading, speed, accuracy: acc } = pos.coords;
-
-  if (heading !== null && !isNaN(heading)) {
-    const deg = Math.round(heading);
-    document.getElementById('bearing').textContent = String(deg).padStart(3,'0');
-    document.getElementById('cardinal').textContent = toCardinal(deg);
-    rotateTo(heading);
-  } else {
-    document.getElementById('bearing').textContent = '---';
-    document.getElementById('cardinal').textContent = '--';
+  function setDbStatus(text, cls) {
+    const el = document.getElementById('db-status');
+    el.textContent  = text;
+    el.className    = 'status-val ' + cls;
   }
 
-  document.getElementById('speed').textContent =
-    (speed !== null && !isNaN(speed)) ? (speed * 3.6).toFixed(1) : '--.-';
-
-  if (acc !== null) {
-    document.getElementById('accuracy').textContent = acc.toFixed(0) + ' m';
-    document.getElementById('acc-fill').style.width =
-      Math.max(0, Math.min(100, 100 - (acc / 50) * 100)) + '%';
-    document.getElementById('accuracy').className =
-      'status-val ' + (acc < 10 ? 'good' : acc < 30 ? 'warn' : 'bad');
+  // ── Compass helpers ──
+  function toCardinal(deg) {
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    return dirs[Math.round(deg / 22.5) % 16];
   }
 
-  const s = document.getElementById('gps-status');
-  s.textContent = 'LIVE'; s.className = 'status-val good'; s.style.animation = 'none';
-}
-
-function onError(err) {
-  document.getElementById('err-msg').textContent = err.message;
-  const s = document.getElementById('gps-status');
-  s.textContent = 'ERR'; s.className = 'status-val bad blink';
-}
-
-function startGPS() {
-  if (!navigator.geolocation) {
-    document.getElementById('err-msg').textContent = 'Geolocation not supported.';
-    return;
+  function rotateTo(deg) {
+    let diff = deg - lastBearing;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    lastBearing += diff;
+    document.getElementById('needle').style.transform = `rotate(${lastBearing}deg)`;
   }
-  if (watchId) navigator.geolocation.clearWatch(watchId);
-  watchId = navigator.geolocation.watchPosition(onPosition, onError, {
-    enableHighAccuracy: true, maximumAge: 0, timeout: 10000
-  });
-}
+
+  // ── GPS callbacks ──
+  function onPosition(pos) {
+    document.getElementById('overlay').classList.add('hidden');
+    lastPos = pos;
+    const { heading, speed, accuracy: acc } = pos.coords;
+
+    if (heading !== null && !isNaN(heading)) {
+      const deg = Math.round(heading);
+      document.getElementById('bearing').textContent  = String(deg).padStart(3,'0');
+      document.getElementById('cardinal').textContent = toCardinal(deg);
+      rotateTo(heading);
+    } else {
+      document.getElementById('bearing').textContent  = '---';
+      document.getElementById('cardinal').textContent = '--';
+    }
+
+    document.getElementById('speed').textContent =
+      (speed !== null && !isNaN(speed)) ? (speed * 3.6).toFixed(1) : '--.-';
+
+    if (acc !== null) {
+      document.getElementById('accuracy').textContent = acc.toFixed(0) + ' m';
+      document.getElementById('acc-fill').style.width =
+        Math.max(0, Math.min(100, 100 - (acc / 50) * 100)) + '%';
+      document.getElementById('accuracy').className =
+        'status-val ' + (acc < 10 ? 'good' : acc < 30 ? 'warn' : 'bad');
+    }
+
+    const s = document.getElementById('gps-status');
+    s.textContent = 'LIVE'; s.className = 'status-val good'; s.style.animation = 'none';
+
+    savePoint(pos);
+  }
+
+  function onError(err) {
+    document.getElementById('err-msg').textContent = err.message;
+    const s = document.getElementById('gps-status');
+    s.textContent = 'ERR'; s.className = 'status-val bad blink';
+  }
+
+  window.startGPS = function() {
+    if (!navigator.geolocation) {
+      document.getElementById('err-msg').textContent = 'Geolocation not supported.';
+      return;
+    }
+    if (watchId) navigator.geolocation.clearWatch(watchId);
+    watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+      enableHighAccuracy: true, maximumAge: 0, timeout: 10000
+    });
+  };
+
+  // ── Draw compass tick marks ──
+  (function() {
+    const svg = document.querySelector('svg');
+    const g   = document.createElementNS('http://www.w3.org/2000/svg','g');
+    for (let i = 0; i < 72; i++) {
+      const rad     = (i * 5 - 90) * Math.PI / 180;
+      const isMajor = i % 9 === 0, isMed = i % 3 === 0;
+      const r1 = 52, r2 = isMajor ? 42 : isMed ? 45 : 48;
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1', 60 + r1 * Math.cos(rad));
+      line.setAttribute('y1', 60 + r1 * Math.sin(rad));
+      line.setAttribute('x2', 60 + r2 * Math.cos(rad));
+      line.setAttribute('y2', 60 + r2 * Math.sin(rad));
+      line.setAttribute('stroke', isMajor ? '#f0a500' : '#2a4a5a');
+      line.setAttribute('stroke-width', isMajor ? '1.5' : '0.8');
+      g.appendChild(line);
+    }
+    svg.insertBefore(g, document.getElementById('needle'));
+  })();
 </script>
 </body>
 </html>
