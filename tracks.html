@@ -99,21 +99,6 @@
 
   #map { height: 300px; width: 100%; }
 
-  .map-actions { padding: 10px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .action-btn {
-    background: transparent;
-    border: 1px solid var(--amber);
-    color: var(--amber);
-    font-family: 'Roboto Mono', monospace;
-    font-size: 0.6rem; letter-spacing: 0.2em;
-    padding: 8px 14px; cursor: pointer;
-    border-radius: 4px; text-transform: uppercase;
-    transition: background 0.2s, color 0.2s;
-  }
-  .action-btn:hover { background: var(--amber); color: var(--bg); }
-  .action-btn.cyan { border-color: var(--cyan); color: var(--cyan); }
-  .action-btn.cyan:hover { background: var(--cyan); color: var(--bg); }
 
   /* Stats row */
   .stats-row { display: flex; gap: 8px; padding: 0 16px 10px; }
@@ -167,9 +152,6 @@
     </div>
     <div id="map"></div>
     <div class="stats-row" id="stats-row"></div>
-    <div class="map-actions">
-      <button class="action-btn cyan" onclick="downloadGPX()">↓ DOWNLOAD GPX</button>
-    </div>
   </div>
 
   <!-- Speed/time chart -->
@@ -182,7 +164,7 @@
     </div>
   </div>
 
-  <div class="version-footer">VERSION 0.3.1</div>
+  <div class="version-footer">VERSION 0.3.3</div>
 </div>
 
 <script type="module">
@@ -403,36 +385,6 @@
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
   const rad = d => d * Math.PI / 180;
-
-  // ── Download GPX ──
-  window.downloadGPX = function() {
-    if (!currentTrack || !currentTrack.length) return;
-    const pts = currentTrack.filter(p => p.lat && p.lng);
-    const trkpts = pts.map(p => {
-      const t = p.ts?.toDate ? p.ts.toDate().toISOString() : new Date().toISOString();
-      return `    <trkpt lat="${p.lat}" lon="${p.lng}">
-      <time>${t}</time>${p.speed !== null ? `\n      <speed>${p.speed?.toFixed(2)}</speed>` : ''}
-    </trkpt>`;
-    }).join('\n');
-
-    const dateStr = currentSession.startDate ? formatDate(currentSession.startDate) : 'track';
-    const gpx = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="SailingGPS v0.1"
-  xmlns="http://www.topografix.com/GPX/1/1">
-  <trk>
-    <name>Sailing Track ${dateStr}</name>
-    <trkseg>
-${trkpts}
-    </trkseg>
-  </trk>
-</gpx>`;
-
-    const blob = new Blob([gpx], { type: 'application/gpx+xml' });
-    const a    = document.createElement('a');
-    a.href     = URL.createObjectURL(blob);
-    a.download = `sailing-track-${dateStr.replace(/\//g,'-')}.gpx`;
-    a.click();
-  };
 
   // ── Formatting helpers ──
   function formatDate(d) {

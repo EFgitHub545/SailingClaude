@@ -120,19 +120,25 @@
   /* ── COMPASS ── */
   .compass-row {
     display: flex;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .compass-dial-box {
+    flex: 1;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
   }
 
   .compass-dial { width: 140px; height: 140px; flex-shrink: 0; }
   .compass-dial svg { width: 100%; height: 100%; }
 
-  .compass-info {
+  .compass-cardinal-box {
+    flex: 1;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+    align-items: center;
+    justify-content: center;
   }
 
   .cardinal-display {
@@ -142,6 +148,7 @@
     letter-spacing: 0.1em;
     text-shadow: 0 0 20px rgba(0,212,255,0.45);
     line-height: 1;
+    text-align: center;
   }
 
   .compass-sub-label {
@@ -150,9 +157,6 @@
     color: var(--text-dim);
     text-transform: uppercase;
   }
-
-  .acc-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; }
-  .acc-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.5s ease; }
 
   #needle {
     transform-origin: 50% 50%;
@@ -280,7 +284,7 @@
 
   .overlay h2 { font-size: 1.1rem; letter-spacing: 0.2em; color: var(--cyan); }
   .overlay p  { font-size: 0.75rem; color: var(--text-dim); line-height: 1.6; max-width: 300px; }
-  .overlay-version { font-size: 0.5rem; letter-spacing: 0.3em; color: var(--text-dim); opacity: 0.5; }
+  .overlay-version { font-size: 0.55rem; letter-spacing: 0.3em; color: #6a9ab0; }
 
   .btn {
     background: transparent;
@@ -309,7 +313,7 @@
   <p>This app needs your device's GPS to show heading and speed, and will save your track to the cloud.</p>
   <button class="btn" id="enable-btn" onclick="startGPS()">ENABLE GPS</button>
   <p id="err-msg" style="color:#ff3c3c;"></p>
-  <div class="overlay-version">VERSION 0.3.2</div>
+  <div class="overlay-version">VERSION 0.3.3</div>
 </div>
 
 <!-- Silent audio for iOS screen-awake workaround -->
@@ -329,26 +333,27 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
   <!-- Compass + cardinal -->
   <div class="panel">
     <div class="compass-row">
-      <div class="compass-dial">
-        <svg viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r="56" fill="none" stroke="#1a3a50" stroke-width="1.5"/>
-          <circle cx="60" cy="60" r="52" fill="none" stroke="#0d2535" stroke-width="8"/>
-          <text x="60" y="13"  text-anchor="middle" fill="#f0a500" font-family="Roboto Mono,monospace" font-size="9" font-weight="700">N</text>
-          <text x="107" y="64" text-anchor="middle" fill="#3a6070" font-family="Roboto Mono,monospace" font-size="7">E</text>
-          <text x="60" y="112" text-anchor="middle" fill="#3a6070" font-family="Roboto Mono,monospace" font-size="7">S</text>
-          <text x="13" y="64"  text-anchor="middle" fill="#3a6070" font-family="Roboto Mono,monospace" font-size="7">W</text>
-          <g id="needle">
-            <polygon points="60,16 56,60 60,68 64,60" fill="#f0a500" opacity="0.9"/>
-            <polygon points="60,104 56,60 60,68 64,60" fill="#2a4a5a"/>
-          </g>
-          <circle cx="60" cy="60" r="4" fill="#0a1820" stroke="#f0a500" stroke-width="1.5"/>
-        </svg>
+      <div class="compass-dial-box">
+        <div class="compass-dial">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="56" fill="none" stroke="#1a3a50" stroke-width="1.5"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="#0d2535" stroke-width="8"/>
+            <text x="60" y="13"  text-anchor="middle" fill="#f0a500" font-family="Roboto Mono,monospace" font-size="9" font-weight="700">N</text>
+            <text x="107" y="64" text-anchor="middle" fill="#3a6070" font-family="Roboto Mono,monospace" font-size="7">E</text>
+            <text x="60" y="112" text-anchor="middle" fill="#3a6070" font-family="Roboto Mono,monospace" font-size="7">S</text>
+            <text x="13" y="64"  text-anchor="middle" fill="#3a6070" font-family="Roboto Mono,monospace" font-size="7">W</text>
+            <g id="needle">
+              <polygon points="60,16 56,60 60,68 64,60" fill="#f0a500" opacity="0.9"/>
+              <polygon points="60,104 56,60 60,68 64,60" fill="#2a4a5a"/>
+            </g>
+            <circle cx="60" cy="60" r="4" fill="#0a1820" stroke="#f0a500" stroke-width="1.5"/>
+          </svg>
+        </div>
       </div>
-      <div class="compass-info">
+      <div class="compass-cardinal-box">
         <div class="cardinal-display" id="cardinal">--</div>
       </div>
     </div>
-    <div class="acc-bar"><div class="acc-fill" id="acc-fill" style="width:0%"></div></div>
   </div>
 
   <div class="divider"></div>
@@ -393,7 +398,7 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     </div>
   </div>
 
-  <div class="version-footer">VERSION 0.3.2</div>
+  <div class="version-footer">VERSION 0.3.3</div>
 </div>
 
 <!-- Firebase -->
@@ -528,8 +533,6 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
 
     if (acc !== null) {
       document.getElementById('accuracy').textContent = acc.toFixed(0) + ' m';
-      document.getElementById('acc-fill').style.width =
-        Math.max(0, Math.min(100, 100 - (acc / 50) * 100)) + '%';
       document.getElementById('accuracy').className =
         'status-val ' + (acc < 10 ? 'good' : acc < 30 ? 'warn' : 'bad');
     }
