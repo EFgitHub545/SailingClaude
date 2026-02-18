@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Sailing Instruments</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #060d14;
@@ -23,7 +23,7 @@
   body {
     background: var(--bg);
     color: var(--amber);
-    font-family: 'Orbitron', monospace;
+    font-family: 'Roboto Mono', monospace;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -70,7 +70,7 @@
   }
 
   .bearing-hero-value {
-    font-size: clamp(5rem, 28vw, 10rem);
+    font-size: clamp(6rem, 33vw, 12rem);
     font-weight: 900;
     color: var(--amber);
     letter-spacing: -0.03em;
@@ -92,7 +92,7 @@
     font-size: 0.6rem;
     letter-spacing: 0.4em;
     color: var(--amber-dim);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Roboto Mono', monospace;
   }
 
   .cardinal-hero {
@@ -132,7 +132,7 @@
     color: var(--text-dim);
     text-transform: uppercase;
     margin-bottom: 10px;
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Roboto Mono', monospace;
     text-align: center;
   }
 
@@ -174,7 +174,7 @@
   .speed-panel { text-align: center; }
 
   .speed-value {
-    font-size: clamp(4rem, 22vw, 8rem);
+    font-size: clamp(4.5rem, 26vw, 10rem);
     font-weight: 900;
     line-height: 1;
     color: var(--cyan);
@@ -189,7 +189,7 @@
     color: var(--cyan-dim);
     letter-spacing: 0.4em;
     margin-top: 6px;
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Roboto Mono', monospace;
   }
 
   /* ── STATUS ── */
@@ -207,8 +207,7 @@
   .status-val {
     font-size: 1rem;
     font-weight: 700;
-    font-family: 'Share Tech Mono', monospace;
-    color: #aaa;
+    font-family: 'Roboto Mono', monospace;
   }
 
   .status-val.good { color: #4cff8f; }
@@ -226,14 +225,13 @@
   }
 
   .overlay h2 { font-size: 1.1rem; letter-spacing: 0.2em; color: var(--cyan); }
-  .overlay p  { font-size: 0.75rem; font-family: 'Share Tech Mono', monospace; color: var(--text-dim); line-height: 1.6; max-width: 300px; }
+  .overlay p  { font-size: 0.75rem; font-family: 'Roboto Mono', monospace; color: var(--text-dim); line-height: 1.6; max-width: 300px; }
 
   .btn {
     background: transparent;
     border: 1px solid var(--amber);
     color: var(--amber);
-    font-family: 'Orbitron', monospace;
-    font-size: 0.7rem; letter-spacing: 0.3em;
+    font-family: 'Roboto Mono', monospace;
     padding: 12px 28px; cursor: pointer;
     border-radius: 4px; text-transform: uppercase;
     transition: background 0.2s, color 0.2s;
