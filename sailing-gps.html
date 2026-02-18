@@ -510,18 +510,25 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
   // ── Fit bearing number to full container width with 10px margin each side ──
   function fitBearingFont() {
     const el        = document.getElementById('bearing');
-    const container = el.parentElement;
-    const available = container.clientWidth - 20; // 10px margin each side
+    const available = window.innerWidth - 20; // 10px margin each side
     if (available <= 0) return;
-    // Binary search for the largest font size that fits
-    let lo = 10, hi = 600;
-    el.style.fontSize = hi + 'px';
+    // Use a temporary absolutely-positioned clone to measure true text width
+    const clone = el.cloneNode(true);
+    clone.style.cssText = [
+      'position:absolute', 'visibility:hidden', 'white-space:nowrap',
+      'font-family:' + getComputedStyle(el).fontFamily,
+      'font-weight:900', 'letter-spacing:0', 'left:-9999px', 'top:-9999px'
+    ].join(';');
+    document.body.appendChild(clone);
+    // Binary search
+    let lo = 10, hi = 800;
     while (hi - lo > 1) {
       const mid = Math.floor((lo + hi) / 2);
-      el.style.fontSize = mid + 'px';
-      if (el.scrollWidth <= available) lo = mid;
+      clone.style.fontSize = mid + 'px';
+      if (clone.getBoundingClientRect().width <= available) lo = mid;
       else hi = mid;
     }
+    document.body.removeChild(clone);
     el.style.fontSize = lo + 'px';
   }
 
