@@ -309,10 +309,16 @@
 <div class="overlay" id="overlay">
   <h2>⚓ SAILING GPS</h2>
   <p>This app needs your device's GPS to show heading and speed, and will save your track to the cloud.</p>
-  <button class="btn" onclick="startGPS()">ENABLE GPS</button>
+  <button class="btn" id="enable-btn" onclick="startGPS()">ENABLE GPS</button>
   <p id="err-msg" style="color:#ff3c3c;"></p>
-  <div class="overlay-version">VERSION 0.1</div>
+  <div class="overlay-version">VERSION 0.2</div>
 </div>
+
+<!-- Silent audio for iOS screen-awake workaround -->
+<audio id="silent-audio" loop>
+  <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAA
+EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
+</audio>
 
 <div class="container">
   <div class="header">⚓ SAILING INSTRUMENTS</div>
@@ -387,12 +393,16 @@
       <div class="status-val blink" id="gps-status">WAIT</div>
     </div>
     <div class="status-item">
+      <div class="label">MOTION</div>
+      <div class="status-val" id="motion-status">--</div>
+    </div>
+    <div class="status-item">
       <div class="label">CLOUD</div>
       <div class="status-val" id="db-status">--</div>
     </div>
   </div>
 
-  <div class="version-footer">VERSION 0.1</div>
+  <div class="version-footer">VERSION 0.2</div>
 </div>
 
 <!-- Firebase -->
@@ -543,11 +553,12 @@
     s.textContent = 'ERR'; s.className = 'status-val bad blink';
   }
 
-  // ── Wake Lock — keep screen on ──
+  // ── Screen-awake: Wake Lock API (Android/Chrome) + silent audio (iOS Safari) ──
   let wakeLock = null;
 
   async function requestWakeLock() {
     if ('wakeLock' in navigator) {
+      // Chrome / Android
       try {
         wakeLock = await navigator.wakeLock.request('screen');
         wakeLock.addEventListener('release', () => {
@@ -556,6 +567,12 @@
       } catch(e) {
         console.warn('Wake lock not granted:', e);
       }
+    } else {
+      // iOS Safari fallback — play silent audio to prevent screen sleep
+      const audio = document.getElementById('silent-audio');
+      if (audio) {
+        audio.play().catch(() => {});
+      }
     }
   }
 
@@ -563,13 +580,44 @@
     if (!document.hidden) requestWakeLock();
   });
 
-  window.startGPS = function() {
+  // ── iOS: request motion/orientation permission for heading ──
+  async function requestiOSMotion() {
+    const motionEl = document.getElementById('motion-status');
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      // iOS — permission required
+      try {
+        const result = await DeviceOrientationEvent.requestPermission();
+        if (result === 'granted') {
+          motionEl.textContent = 'OK';
+          motionEl.className   = 'status-val good';
+        } else {
+          motionEl.textContent = 'DENIED';
+          motionEl.className   = 'status-val bad';
+          document.getElementById('err-msg').textContent =
+            'Motion permission denied — heading may not work.';
+        }
+      } catch(e) {
+        motionEl.textContent = 'ERR';
+        motionEl.className   = 'status-val bad';
+        console.warn('Motion permission error:', e);
+      }
+    } else {
+      // Android / non-iOS — motion permission not required
+      motionEl.textContent = 'OK';
+      motionEl.className   = 'status-val good';
+    }
+  }
+
+  window.startGPS = async function() {
     if (!navigator.geolocation) {
       document.getElementById('err-msg').textContent = 'Geolocation not supported.';
       return;
     }
-    if (watchId) navigator.geolocation.clearWatch(watchId);
+    // Request iOS motion permission first (must be triggered by user gesture)
+    await requestiOSMotion();
     requestWakeLock();
+    if (watchId) navigator.geolocation.clearWatch(watchId);
     watchId = navigator.geolocation.watchPosition(onPosition, onError, {
       enableHighAccuracy: true, maximumAge: 0, timeout: 10000
     });
