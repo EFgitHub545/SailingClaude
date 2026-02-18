@@ -543,12 +543,33 @@
     s.textContent = 'ERR'; s.className = 'status-val bad blink';
   }
 
+  // ── Wake Lock — keep screen on ──
+  let wakeLock = null;
+
+  async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => {
+          if (!document.hidden) requestWakeLock();
+        });
+      } catch(e) {
+        console.warn('Wake lock not granted:', e);
+      }
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) requestWakeLock();
+  });
+
   window.startGPS = function() {
     if (!navigator.geolocation) {
       document.getElementById('err-msg').textContent = 'Geolocation not supported.';
       return;
     }
     if (watchId) navigator.geolocation.clearWatch(watchId);
+    requestWakeLock();
     watchId = navigator.geolocation.watchPosition(onPosition, onError, {
       enableHighAccuracy: true, maximumAge: 0, timeout: 10000
     });
