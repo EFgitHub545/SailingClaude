@@ -71,15 +71,14 @@
   }
 
   .bearing-hero-value {
-    font-size: 10px; /* set by JS */
+    font-size: 38vw;
     font-weight: 900;
     color: #ffffff;
-    letter-spacing: 0;
+    letter-spacing: -0.04em;
     text-shadow: 0 0 60px rgba(255,255,255,0.25);
     font-variant-numeric: tabular-nums;
     display: block;
     width: 100%;
-    white-space: nowrap;
   }
 
   /* ── PANELS ── */
@@ -311,7 +310,7 @@
   <p>This app needs your device's GPS to show heading and speed, and will save your track to the cloud.</p>
   <button class="btn" id="enable-btn" onclick="startGPS()">ENABLE GPS</button>
   <p id="err-msg" style="color:#ff3c3c;"></p>
-  <div class="overlay-version">VERSION 0.3</div>
+  <div class="overlay-version">VERSION 0.3.1</div>
 </div>
 
 <!-- Silent audio for iOS screen-awake workaround -->
@@ -395,7 +394,7 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     </div>
   </div>
 
-  <div class="version-footer">VERSION 0.3</div>
+  <div class="version-footer">VERSION 0.3.1</div>
 </div>
 
 <!-- Firebase -->
@@ -507,33 +506,7 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     document.getElementById('needle').style.transform = `rotate(${lastBearing}deg)`;
   }
 
-  // ── Fit bearing number to full container width with 10px margin each side ──
-  function fitBearingFont() {
-    const el        = document.getElementById('bearing');
-    const available = window.innerWidth - 20; // 10px margin each side
-    if (available <= 0) return;
-    // Use a temporary absolutely-positioned clone to measure true text width
-    const clone = el.cloneNode(true);
-    clone.style.cssText = [
-      'position:absolute', 'visibility:hidden', 'white-space:nowrap',
-      'font-family:' + getComputedStyle(el).fontFamily,
-      'font-weight:900', 'letter-spacing:0', 'left:-9999px', 'top:-9999px'
-    ].join(';');
-    document.body.appendChild(clone);
-    // Binary search
-    let lo = 10, hi = 800;
-    while (hi - lo > 1) {
-      const mid = Math.floor((lo + hi) / 2);
-      clone.style.fontSize = mid + 'px';
-      if (clone.getBoundingClientRect().width <= available) lo = mid;
-      else hi = mid;
-    }
-    document.body.removeChild(clone);
-    el.style.fontSize = lo + 'px';
-  }
 
-  // Re-fit on window resize
-  window.addEventListener('resize', fitBearingFont);
 
   // ── GPS callbacks ──
   function onPosition(pos) {
@@ -546,11 +519,9 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
       document.getElementById('bearing').textContent  = String(deg).padStart(3,'0');
       document.getElementById('cardinal').textContent = toCardinal(deg);
       rotateTo(heading);
-      fitBearingFont();
     } else {
       document.getElementById('bearing').textContent  = '---';
       document.getElementById('cardinal').textContent = '--';
-      fitBearingFont();
     }
 
     document.getElementById('speed').textContent =
@@ -666,8 +637,6 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     svg.insertBefore(g, document.getElementById('needle'));
   })();
 
-  // Initial fit
-  fitBearingFont();
 </script>
 </body>
 </html>

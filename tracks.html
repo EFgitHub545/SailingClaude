@@ -8,6 +8,7 @@
 <!-- Leaflet for map display -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
     --bg: #060d14; --panel: #0a1820; --border: #1a3a50;
@@ -128,6 +129,25 @@
   }
 
   .loading { text-align: center; color: var(--text-dim); font-size: 0.65rem; letter-spacing: 0.2em; padding: 20px; }
+
+  /* ── SPEED CHART ── */
+  .chart-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: none;
+    position: relative;
+  }
+  .chart-panel::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--amber), transparent);
+    opacity: 0.5;
+  }
+  .chart-panel.visible { display: block; }
+  .chart-header { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  .chart-title { font-size: 0.6rem; letter-spacing: 0.3em; color: var(--amber); text-transform: uppercase; }
+  .chart-wrap { padding: 12px; position: relative; height: 200px; }
 </style>
 </head>
 <body>
@@ -153,7 +173,17 @@
     </div>
   </div>
 
-  <div class="version-footer">VERSION 0.1</div>
+  <!-- Speed/time chart -->
+  <div class="chart-panel" id="chart-panel">
+    <div class="chart-header">
+      <span class="chart-title">SPEED OVER TIME</span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="speed-chart"></canvas>
+    </div>
+  </div>
+
+  <div class="version-footer">VERSION 0.3.1</div>
 </div>
 
 <script type="module">
@@ -174,9 +204,10 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  let leafletMap    = null;
-  let currentTrack  = null;   // array of point objects
+  let leafletMap     = null;
+  let currentTrack   = null;   // array of point objects
   let currentSession = null;  // session metadata
+  let speedChart     = null;
 
   // ── Load session list ──
   async function loadSessions() {
@@ -235,6 +266,7 @@
 
       drawMap(pts);
       drawStats(pts);
+      drawSpeedChart(pts);
     } catch(e) {
       console.error(e);
     }
@@ -278,6 +310,80 @@
       <div class="stat-box"><div class="stat-val">${avgSpeed}</div><div class="stat-lbl">AVG KM/H</div></div>
       <div class="stat-box"><div class="stat-val">${pts.length}</div><div class="stat-lbl">POINTS</div></div>
     `;
+  }
+
+  // ── Draw speed/time chart ──
+  function drawSpeedChart(pts) {
+    const chartPanel = document.getElementById('chart-panel');
+    chartPanel.classList.add('visible');
+
+    // Build labels (minutes elapsed) and speed data
+    const validPts = pts.filter(p => p.speed !== null && !isNaN(p.speed) && p.ts);
+    if (!validPts.length) return;
+
+    const startMs = validPts[0].ts.toDate().getTime();
+    const labels  = validPts.map(p => {
+      const mins = (p.ts.toDate().getTime() - startMs) / 60000;
+      return mins < 1 ? (mins * 60).toFixed(0) + 's' : mins.toFixed(1) + 'm';
+    });
+    const speeds = validPts.map(p => parseFloat((p.speed * 3.6).toFixed(1)));
+
+    // Thin labels — show at most 8
+    const step = Math.max(1, Math.floor(labels.length / 8));
+    const sparseLabels = labels.map((l, i) => i % step === 0 ? l : '');
+
+    const ctx = document.getElementById('speed-chart').getContext('2d');
+
+    if (speedChart) {
+      speedChart.destroy();
+      speedChart = null;
+    }
+
+    speedChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: sparseLabels,
+        datasets: [{
+          label: 'Speed (km/h)',
+          data: speeds,
+          borderColor: '#f0a500',
+          backgroundColor: 'rgba(240,165,0,0.08)',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 400 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0a1820',
+            borderColor: '#1a3a50',
+            borderWidth: 1,
+            titleColor: '#3a6070',
+            bodyColor: '#f0a500',
+            callbacks: {
+              label: ctx => ctx.parsed.y.toFixed(1) + ' km/h'
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#3a6070', font: { family: 'Roboto Mono', size: 9 }, maxRotation: 0 },
+            grid: { color: '#0d2535' }
+          },
+          y: {
+            ticks: { color: '#3a6070', font: { family: 'Roboto Mono', size: 9 }, callback: v => v + ' km/h' },
+            grid: { color: '#0d2535' },
+            beginAtZero: true
+          }
+        }
+      }
+    });
   }
 
   // ── Calculate total distance (Haversine) ──
