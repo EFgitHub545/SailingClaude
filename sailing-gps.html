@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Sailing Instruments</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060d14;
+    --panel: #0a1820;
+    --border: #1a3a50;
+    --amber: #f0a500;
+    --amber-dim: #7a5200;
+    --cyan: #00d4ff;
+    --cyan-dim: #004d5e;
+    --red: #ff3c3c;
+    --text-dim: #3a6070;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--amber);
+    font-family: 'Orbitron', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 16px;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header {
+    text-align: center;
+    letter-spacing: 0.3em;
+    font-size: 0.65rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--amber), transparent);
+    opacity: 0.5;
+  }
+
+  .panel.cyan-accent::before {
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+
+  .label {
+    font-size: 0.55rem;
+    letter-spacing: 0.4em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* COMPASS */
+  .compass-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .compass-dial {
+    width: 130px;
+    height: 130px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .compass-dial svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .compass-data {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .bearing-value {
+    font-size: clamp(4rem, 14vw, 6rem);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--amber);
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 30px rgba(240,165,0,0.4);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bearing-unit {
+    font-size: 0.7rem;
+    color: var(--amber-dim);
+    letter-spacing: 0.2em;
+    margin-top: 4px;
+  }
+
+  .cardinal {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  /* SPEED */
+  .speed-value {
+    font-size: clamp(3.5rem, 12vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--cyan);
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 30px rgba(0,212,255,0.35);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .speed-unit {
+    font-size: 0.7rem;
+    color: var(--cyan-dim);
+    letter-spacing: 0.2em;
+    margin-top: 6px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* STATUS row */
+  .status-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .status-item {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .status-val {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Share Tech Mono', monospace;
+    color: #aaa;
+  }
+
+  .status-val.good { color: #4cff8f; }
+  .status-val.warn { color: var(--amber); }
+  .status-val.bad  { color: var(--red); }
+
+  /* Accuracy bar */
+  .acc-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .acc-fill {
+    height: 100%;
+    background: #4cff8f;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* Needle animation */
+  #needle {
+    transform-origin: 50% 50%;
+    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  /* Permission / error overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6,13,20,0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px;
+    z-index: 100;
+    gap: 20px;
+  }
+
+  .overlay h2 {
+    font-size: 1.1rem;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+  }
+
+  .overlay p {
+    font-size: 0.75rem;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--text-dim);
+    line-height: 1.6;
+    max-width: 300px;
+  }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--amber);
+    color: var(--amber);
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    padding: 12px 28px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-transform: uppercase;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .btn:hover { background: var(--amber); color: var(--bg); }
+
+  .blink {
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Startup overlay -->
+<div class="overlay" id="overlay">
+  <h2>⚓ SAILING GPS</h2>
+  <p>This app needs your device's GPS to show heading and speed.<br>Tap below to grant location access.</p>
+  <button class="btn" onclick="startGPS()">ENABLE GPS</button>
+  <p id="err-msg" style="color:#ff3c3c;"></p>
+</div>
+
+<div class="container">
+  <div class="header">⚓ SAILING INSTRUMENTS</div>
+
+  <!-- Compass panel -->
+  <div class="panel">
+    <div class="label">COG — COURSE OVER GROUND</div>
+    <div class="compass-wrap">
+      <div class="compass-dial">
+        <svg viewBox="0 0 120 120">
+          <!-- Outer ring -->
+          <circle cx="60" cy="60" r="56" fill="none" stroke="#1a3a50" stroke-width="1.5"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#0d2535" stroke-width="8"/>
+          <!-- Tick marks -->
+          <g stroke="#3a6070" stroke-width="1">
+            <!-- 72 ticks at 5° intervals -->
+            <script>/* ticks drawn below via JS */</script>
+          </g>
+          <!-- Cardinal labels -->
+          <text x="60" y="13" text-anchor="middle" fill="#f0a500" font-family="Orbitron,monospace" font-size="9" font-weight="700">N</text>
+          <text x="107" y="64" text-anchor="middle" fill="#3a6070" font-family="Orbitron,monospace" font-size="7">E</text>
+          <text x="60" y="112" text-anchor="middle" fill="#3a6070" font-family="Orbitron,monospace" font-size="7">S</text>
+          <text x="13" y="64" text-anchor="middle" fill="#3a6070" font-family="Orbitron,monospace" font-size="7">W</text>
+          <!-- Needle group -->
+          <g id="needle">
+            <polygon points="60,16 56,60 60,68 64,60" fill="#f0a500" opacity="0.9"/>
+            <polygon points="60,104 56,60 60,68 64,60" fill="#2a4a5a"/>
+          </g>
+          <!-- Centre dot -->
+          <circle cx="60" cy="60" r="4" fill="#0a1820" stroke="#f0a500" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="compass-data">
+        <div class="bearing-value" id="bearing">---</div>
+        <div class="bearing-unit">DEGREES</div>
+        <div class="cardinal" id="cardinal">--</div>
+      </div>
+    </div>
+    <div class="acc-bar"><div class="acc-fill" id="acc-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- Speed panel -->
+  <div class="panel cyan-accent">
+    <div class="label">SOG — SPEED OVER GROUND</div>
+    <div class="speed-value" id="speed">--.-</div>
+    <div class="speed-unit">KM / HR</div>
+  </div>
+
+  <!-- Status row -->
+  <div class="status-row">
+    <div class="status-item">
+      <div class="label">SATS</div>
+      <div class="status-val" id="sat-count">--</div>
+    </div>
+    <div class="status-item">
+      <div class="label">ACCURACY</div>
+      <div class="status-val" id="accuracy">-- m</div>
+    </div>
+    <div class="status-item">
+      <div class="label">STATUS</div>
+      <div class="status-val blink" id="gps-status">WAIT</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Draw SVG tick marks dynamically
+(function() {
+  const svg = document.querySelector('svg');
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  for (let i = 0; i < 72; i++) {
+    const angle = i * 5;
+    const rad = (angle - 90) * Math.PI / 180;
+    const isMajor = i % 9 === 0; // every 45°
+    const isMed   = i % 3 === 0;
+    const r1 = 52, r2 = isMajor ? 42 : isMed ? 45 : 48;
+    const x1 = 60 + r1 * Math.cos(rad);
+    const y1 = 60 + r1 * Math.sin(rad);
+    const x2 = 60 + r2 * Math.cos(rad);
+    const y2 = 60 + r2 * Math.sin(rad);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', isMajor ? '#f0a500' : '#2a4a5a');
+    line.setAttribute('stroke-width', isMajor ? '1.5' : '0.8');
+    g.appendChild(line);
+  }
+  // Insert before needle
+  svg.insertBefore(g, document.getElementById('needle'));
+})();
+
+let watchId = null;
+let lastBearing = 0;
+
+function toCardinal(deg) {
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg / 22.5) % 16];
+}
+
+function rotateTo(deg) {
+  // Shortest path rotation
+  let diff = deg - lastBearing;
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+  lastBearing += diff;
+  document.getElementById('needle').style.transform = `rotate(${lastBearing}deg)`;
+}
+
+function onPosition(pos) {
+  document.getElementById('overlay').classList.add('hidden');
+
+  const heading = pos.coords.heading;
+  const speed   = pos.coords.speed;   // m/s
+  const acc     = pos.coords.accuracy;
+
+  // Bearing
+  if (heading !== null && !isNaN(heading)) {
+    const deg = Math.round(heading);
+    document.getElementById('bearing').textContent = String(deg).padStart(3,'0');
+    document.getElementById('cardinal').textContent = toCardinal(deg);
+    rotateTo(heading);
+  } else {
+    document.getElementById('bearing').textContent = '---';
+    document.getElementById('cardinal').textContent = '--';
+  }
+
+  // Speed (m/s → km/h)
+  if (speed !== null && !isNaN(speed)) {
+    document.getElementById('speed').textContent = (speed * 3.6).toFixed(1);
+  } else {
+    document.getElementById('speed').textContent = '--.-';
+  }
+
+  // Accuracy bar (good = <5m, bad = >50m)
+  if (acc !== null) {
+    document.getElementById('accuracy').textContent = acc.toFixed(0) + ' m';
+    const pct = Math.max(0, Math.min(100, 100 - (acc / 50) * 100));
+    document.getElementById('acc-fill').style.width = pct + '%';
+    const accEl = document.getElementById('accuracy');
+    accEl.className = 'status-val ' + (acc < 10 ? 'good' : acc < 30 ? 'warn' : 'bad');
+  }
+
+  // Status
+  const statusEl = document.getElementById('gps-status');
+  statusEl.textContent = 'LIVE';
+  statusEl.className = 'status-val good';
+  statusEl.style.animation = 'none';
+}
+
+function onError(err) {
+  document.getElementById('err-msg').textContent = err.message;
+  const statusEl = document.getElementById('gps-status');
+  statusEl.textContent = 'ERR';
+  statusEl.className = 'status-val bad blink';
+}
+
+function startGPS() {
+  if (!navigator.geolocation) {
+    document.getElementById('err-msg').textContent = 'Geolocation not supported on this device.';
+    return;
+  }
+  if (watchId) navigator.geolocation.clearWatch(watchId);
+  watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 10000
+  });
+}
+</script>
+</body>
+</html>
