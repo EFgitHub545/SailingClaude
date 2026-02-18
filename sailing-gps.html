@@ -28,12 +28,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    padding: 16px;
+    overflow-x: hidden;
+    padding: 12px;
   }
 
-  /* Subtle grid background */
   body::before {
     content: '';
     position: fixed;
@@ -47,26 +45,70 @@
 
   .container {
     width: 100%;
-    max-width: 420px;
+    max-width: 480px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 
   .header {
     text-align: center;
     letter-spacing: 0.3em;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--cyan);
     text-transform: uppercase;
-    opacity: 0.7;
+    opacity: 0.6;
+    padding: 4px 0;
   }
 
+  /* ── BIG BEARING NUMBER ── */
+  .bearing-hero {
+    width: 100%;
+    text-align: center;
+    line-height: 1;
+    padding: 8px 0 4px;
+  }
+
+  .bearing-hero-value {
+    font-size: clamp(5rem, 28vw, 10rem);
+    font-weight: 900;
+    color: var(--amber);
+    letter-spacing: -0.03em;
+    text-shadow: 0 0 40px rgba(240,165,0,0.5);
+    font-variant-numeric: tabular-nums;
+    display: block;
+    width: 100%;
+  }
+
+  .bearing-hero-sub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 4px;
+  }
+
+  .bearing-deg-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.4em;
+    color: var(--amber-dim);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .cardinal-hero {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 20px rgba(0,212,255,0.4);
+  }
+
+  /* ── PANELS ── */
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 20px 24px 16px;
+    padding: 16px 20px 14px;
     position: relative;
     overflow: hidden;
   }
@@ -85,117 +127,35 @@
   }
 
   .label {
-    font-size: 0.55rem;
+    font-size: 0.5rem;
     letter-spacing: 0.4em;
     color: var(--text-dim);
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-family: 'Share Tech Mono', monospace;
-  }
-
-  /* COMPASS */
-  .compass-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  .compass-dial {
-    width: 130px;
-    height: 130px;
-    flex-shrink: 0;
-    position: relative;
-  }
-
-  .compass-dial svg {
-    width: 100%;
-    height: 100%;
-  }
-
-  .compass-data {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-  }
-
-  .bearing-value {
-    font-size: clamp(4rem, 14vw, 6rem);
-    font-weight: 900;
-    line-height: 1;
-    color: var(--amber);
-    letter-spacing: -0.02em;
-    text-shadow: 0 0 30px rgba(240,165,0,0.4);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .bearing-unit {
-    font-size: 0.7rem;
-    color: var(--amber-dim);
-    letter-spacing: 0.2em;
-    margin-top: 4px;
-  }
-
-  .cardinal {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--cyan);
-    letter-spacing: 0.1em;
-    margin-top: 4px;
-  }
-
-  /* SPEED */
-  .speed-value {
-    font-size: clamp(3.5rem, 12vw, 5.5rem);
-    font-weight: 900;
-    line-height: 1;
-    color: var(--cyan);
-    letter-spacing: -0.02em;
-    text-shadow: 0 0 30px rgba(0,212,255,0.35);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .speed-unit {
-    font-size: 0.7rem;
-    color: var(--cyan-dim);
-    letter-spacing: 0.2em;
-    margin-top: 6px;
-    font-family: 'Share Tech Mono', monospace;
-  }
-
-  /* STATUS row */
-  .status-row {
-    display: flex;
-    gap: 12px;
-  }
-
-  .status-item {
-    flex: 1;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px;
     text-align: center;
   }
 
-  .status-val {
-    font-size: 1.1rem;
-    font-weight: 700;
-    font-family: 'Share Tech Mono', monospace;
-    color: #aaa;
+  /* ── COMPASS ── */
+  .compass-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .status-val.good { color: #4cff8f; }
-  .status-val.warn { color: var(--amber); }
-  .status-val.bad  { color: var(--red); }
+  .compass-dial {
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+  }
 
-  /* Accuracy bar */
+  .compass-dial svg { width: 100%; height: 100%; }
+
   .acc-bar {
     height: 3px;
     background: var(--border);
     border-radius: 2px;
-    margin-top: 10px;
+    margin-top: 12px;
     overflow: hidden;
   }
   .acc-fill {
@@ -205,70 +165,94 @@
     transition: width 0.5s ease;
   }
 
-  /* Needle animation */
   #needle {
     transform-origin: 50% 50%;
     transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
-  /* Permission / error overlay */
-  .overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(6,13,20,0.95);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 32px;
-    z-index: 100;
-    gap: 20px;
-  }
+  /* ── SPEED ── */
+  .speed-panel { text-align: center; }
 
-  .overlay h2 {
-    font-size: 1.1rem;
-    letter-spacing: 0.2em;
+  .speed-value {
+    font-size: clamp(4rem, 22vw, 8rem);
+    font-weight: 900;
+    line-height: 1;
     color: var(--cyan);
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 40px rgba(0,212,255,0.45);
+    font-variant-numeric: tabular-nums;
+    display: block;
   }
 
-  .overlay p {
-    font-size: 0.75rem;
+  .speed-unit {
+    font-size: 0.65rem;
+    color: var(--cyan-dim);
+    letter-spacing: 0.4em;
+    margin-top: 6px;
     font-family: 'Share Tech Mono', monospace;
-    color: var(--text-dim);
-    line-height: 1.6;
-    max-width: 300px;
   }
+
+  /* ── STATUS ── */
+  .status-row { display: flex; gap: 10px; }
+
+  .status-item {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .status-val {
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Share Tech Mono', monospace;
+    color: #aaa;
+  }
+
+  .status-val.good { color: #4cff8f; }
+  .status-val.warn { color: var(--amber); }
+  .status-val.bad  { color: var(--red); }
+
+  /* ── OVERLAY ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(6,13,20,0.95);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 32px;
+    z-index: 100; gap: 20px;
+  }
+
+  .overlay h2 { font-size: 1.1rem; letter-spacing: 0.2em; color: var(--cyan); }
+  .overlay p  { font-size: 0.75rem; font-family: 'Share Tech Mono', monospace; color: var(--text-dim); line-height: 1.6; max-width: 300px; }
 
   .btn {
     background: transparent;
     border: 1px solid var(--amber);
     color: var(--amber);
     font-family: 'Orbitron', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.3em;
-    padding: 12px 28px;
-    cursor: pointer;
-    border-radius: 4px;
-    text-transform: uppercase;
+    font-size: 0.7rem; letter-spacing: 0.3em;
+    padding: 12px 28px; cursor: pointer;
+    border-radius: 4px; text-transform: uppercase;
     transition: background 0.2s, color 0.2s;
   }
+  .btn:hover, .btn:active { background: var(--amber); color: var(--bg); }
 
-  .btn:hover { background: var(--amber); color: var(--bg); }
-
-  .blink {
-    animation: blink 1s step-end infinite;
-  }
-  @keyframes blink {
-    50% { opacity: 0; }
-  }
-
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
   .hidden { display: none; }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
 </style>
 </head>
 <body>
 
-<!-- Startup overlay -->
 <div class="overlay" id="overlay">
   <h2>⚓ SAILING GPS</h2>
   <p>This app needs your device's GPS to show heading and speed.<br>Tap below to grant location access.</p>
@@ -279,56 +263,52 @@
 <div class="container">
   <div class="header">⚓ SAILING INSTRUMENTS</div>
 
-  <!-- Compass panel -->
+  <!-- Big bearing number, full width -->
+  <div class="bearing-hero">
+    <span class="bearing-hero-value" id="bearing">---</span>
+    <div class="bearing-hero-sub">
+      <span class="bearing-deg-label">DEGREES</span>
+      <span class="cardinal-hero" id="cardinal">--</span>
+      <span class="bearing-deg-label">COG</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Compass dial -->
   <div class="panel">
-    <div class="label">COG — COURSE OVER GROUND</div>
-    <div class="compass-wrap">
+    <div class="label">COMPASS</div>
+    <div class="compass-row">
       <div class="compass-dial">
         <svg viewBox="0 0 120 120">
-          <!-- Outer ring -->
           <circle cx="60" cy="60" r="56" fill="none" stroke="#1a3a50" stroke-width="1.5"/>
           <circle cx="60" cy="60" r="52" fill="none" stroke="#0d2535" stroke-width="8"/>
-          <!-- Tick marks -->
-          <g stroke="#3a6070" stroke-width="1">
-            <!-- 72 ticks at 5° intervals -->
-            <script>/* ticks drawn below via JS */</script>
-          </g>
-          <!-- Cardinal labels -->
-          <text x="60" y="13" text-anchor="middle" fill="#f0a500" font-family="Orbitron,monospace" font-size="9" font-weight="700">N</text>
+          <text x="60" y="13"  text-anchor="middle" fill="#f0a500" font-family="Orbitron,monospace" font-size="9" font-weight="700">N</text>
           <text x="107" y="64" text-anchor="middle" fill="#3a6070" font-family="Orbitron,monospace" font-size="7">E</text>
           <text x="60" y="112" text-anchor="middle" fill="#3a6070" font-family="Orbitron,monospace" font-size="7">S</text>
-          <text x="13" y="64" text-anchor="middle" fill="#3a6070" font-family="Orbitron,monospace" font-size="7">W</text>
-          <!-- Needle group -->
+          <text x="13" y="64"  text-anchor="middle" fill="#3a6070" font-family="Orbitron,monospace" font-size="7">W</text>
           <g id="needle">
             <polygon points="60,16 56,60 60,68 64,60" fill="#f0a500" opacity="0.9"/>
             <polygon points="60,104 56,60 60,68 64,60" fill="#2a4a5a"/>
           </g>
-          <!-- Centre dot -->
           <circle cx="60" cy="60" r="4" fill="#0a1820" stroke="#f0a500" stroke-width="1.5"/>
         </svg>
-      </div>
-      <div class="compass-data">
-        <div class="bearing-value" id="bearing">---</div>
-        <div class="bearing-unit">DEGREES</div>
-        <div class="cardinal" id="cardinal">--</div>
       </div>
     </div>
     <div class="acc-bar"><div class="acc-fill" id="acc-fill" style="width:0%"></div></div>
   </div>
 
-  <!-- Speed panel -->
-  <div class="panel cyan-accent">
-    <div class="label">SOG — SPEED OVER GROUND</div>
-    <div class="speed-value" id="speed">--.-</div>
+  <div class="divider"></div>
+
+  <!-- Speed, centred -->
+  <div class="panel cyan-accent speed-panel">
+    <div class="label">SPEED OVER GROUND</div>
+    <span class="speed-value" id="speed">--.-</span>
     <div class="speed-unit">KM / HR</div>
   </div>
 
-  <!-- Status row -->
+  <!-- Status -->
   <div class="status-row">
-    <div class="status-item">
-      <div class="label">SATS</div>
-      <div class="status-val" id="sat-count">--</div>
-    </div>
     <div class="status-item">
       <div class="label">ACCURACY</div>
       <div class="status-val" id="accuracy">-- m</div>
@@ -341,33 +321,27 @@
 </div>
 
 <script>
-// Draw SVG tick marks dynamically
 (function() {
   const svg = document.querySelector('svg');
   const g = document.createElementNS('http://www.w3.org/2000/svg','g');
   for (let i = 0; i < 72; i++) {
     const angle = i * 5;
     const rad = (angle - 90) * Math.PI / 180;
-    const isMajor = i % 9 === 0; // every 45°
-    const isMed   = i % 3 === 0;
+    const isMajor = i % 9 === 0, isMed = i % 3 === 0;
     const r1 = 52, r2 = isMajor ? 42 : isMed ? 45 : 48;
-    const x1 = 60 + r1 * Math.cos(rad);
-    const y1 = 60 + r1 * Math.sin(rad);
-    const x2 = 60 + r2 * Math.cos(rad);
-    const y2 = 60 + r2 * Math.sin(rad);
     const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('x1', 60 + r1 * Math.cos(rad));
+    line.setAttribute('y1', 60 + r1 * Math.sin(rad));
+    line.setAttribute('x2', 60 + r2 * Math.cos(rad));
+    line.setAttribute('y2', 60 + r2 * Math.sin(rad));
     line.setAttribute('stroke', isMajor ? '#f0a500' : '#2a4a5a');
     line.setAttribute('stroke-width', isMajor ? '1.5' : '0.8');
     g.appendChild(line);
   }
-  // Insert before needle
   svg.insertBefore(g, document.getElementById('needle'));
 })();
 
-let watchId = null;
-let lastBearing = 0;
+let watchId = null, lastBearing = 0;
 
 function toCardinal(deg) {
   const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
@@ -375,7 +349,6 @@ function toCardinal(deg) {
 }
 
 function rotateTo(deg) {
-  // Shortest path rotation
   let diff = deg - lastBearing;
   if (diff > 180) diff -= 360;
   if (diff < -180) diff += 360;
@@ -385,12 +358,8 @@ function rotateTo(deg) {
 
 function onPosition(pos) {
   document.getElementById('overlay').classList.add('hidden');
+  const { heading, speed, accuracy: acc } = pos.coords;
 
-  const heading = pos.coords.heading;
-  const speed   = pos.coords.speed;   // m/s
-  const acc     = pos.coords.accuracy;
-
-  // Bearing
   if (heading !== null && !isNaN(heading)) {
     const deg = Math.round(heading);
     document.getElementById('bearing').textContent = String(deg).padStart(3,'0');
@@ -401,46 +370,35 @@ function onPosition(pos) {
     document.getElementById('cardinal').textContent = '--';
   }
 
-  // Speed (m/s → km/h)
-  if (speed !== null && !isNaN(speed)) {
-    document.getElementById('speed').textContent = (speed * 3.6).toFixed(1);
-  } else {
-    document.getElementById('speed').textContent = '--.-';
-  }
+  document.getElementById('speed').textContent =
+    (speed !== null && !isNaN(speed)) ? (speed * 3.6).toFixed(1) : '--.-';
 
-  // Accuracy bar (good = <5m, bad = >50m)
   if (acc !== null) {
     document.getElementById('accuracy').textContent = acc.toFixed(0) + ' m';
-    const pct = Math.max(0, Math.min(100, 100 - (acc / 50) * 100));
-    document.getElementById('acc-fill').style.width = pct + '%';
-    const accEl = document.getElementById('accuracy');
-    accEl.className = 'status-val ' + (acc < 10 ? 'good' : acc < 30 ? 'warn' : 'bad');
+    document.getElementById('acc-fill').style.width =
+      Math.max(0, Math.min(100, 100 - (acc / 50) * 100)) + '%';
+    document.getElementById('accuracy').className =
+      'status-val ' + (acc < 10 ? 'good' : acc < 30 ? 'warn' : 'bad');
   }
 
-  // Status
-  const statusEl = document.getElementById('gps-status');
-  statusEl.textContent = 'LIVE';
-  statusEl.className = 'status-val good';
-  statusEl.style.animation = 'none';
+  const s = document.getElementById('gps-status');
+  s.textContent = 'LIVE'; s.className = 'status-val good'; s.style.animation = 'none';
 }
 
 function onError(err) {
   document.getElementById('err-msg').textContent = err.message;
-  const statusEl = document.getElementById('gps-status');
-  statusEl.textContent = 'ERR';
-  statusEl.className = 'status-val bad blink';
+  const s = document.getElementById('gps-status');
+  s.textContent = 'ERR'; s.className = 'status-val bad blink';
 }
 
 function startGPS() {
   if (!navigator.geolocation) {
-    document.getElementById('err-msg').textContent = 'Geolocation not supported on this device.';
+    document.getElementById('err-msg').textContent = 'Geolocation not supported.';
     return;
   }
   if (watchId) navigator.geolocation.clearWatch(watchId);
   watchId = navigator.geolocation.watchPosition(onPosition, onError, {
-    enableHighAccuracy: true,
-    maximumAge: 0,
-    timeout: 10000
+    enableHighAccuracy: true, maximumAge: 0, timeout: 10000
   });
 }
 </script>
