@@ -299,20 +299,30 @@
     const chartPanel = document.getElementById('chart-panel');
     chartPanel.classList.add('visible');
 
-    // Build labels (minutes elapsed) and speed data
-    const validPts = pts.filter(p => p.speed !== null && !isNaN(p.speed) && p.ts);
-    if (!validPts.length) return;
-
-    const startMs = validPts[0].ts.toDate().getTime();
-    const labels  = validPts.map(p => {
-      const mins = (p.ts.toDate().getTime() - startMs) / 60000;
-      return mins < 1 ? (mins * 60).toFixed(0) + 's' : mins.toFixed(1) + 'm';
-    });
-    const speeds = validPts.map(p => parseFloat((p.speed * 3.6).toFixed(1)));
-
-    // Thin labels — show at most 8
-    const step = Math.max(1, Math.floor(labels.length / 8));
-    const sparseLabels = labels.map((l, i) => i % step === 0 ? l : '');
+    // Include all points — use 0 for null/missing speed values
+    const validPts = pts.filter(p => p.ts);
+    if (!validPts.length) {
+      // Fallback: no timestamps, just use all points with index as x axis
+      const allPts = pts;
+      if (!allPts.length) return;
+      var labels  = allPts.map((_, i) => i % Math.max(1, Math.floor(allPts.length / 8)) === 0 ? String(i) : '');
+      var speeds  = allPts.map(p => (p.speed != null && !isNaN(p.speed)) ? parseFloat((p.speed * 3.6).toFixed(1)) : 0);
+    } else {
+      // Use elapsed time on x axis
+      const startMs = validPts[0].ts.toDate ? validPts[0].ts.toDate().getTime()
+                                             : validPts[0].ts.seconds * 1000;
+      const rawLabels = validPts.map(p => {
+        const ms   = p.ts.toDate ? p.ts.toDate().getTime() : p.ts.seconds * 1000;
+        const mins = (ms - startMs) / 60000;
+        return mins < 1 ? (mins * 60).toFixed(0) + 's' : mins.toFixed(1) + 'm';
+      });
+      var speeds = validPts.map(p =>
+        (p.speed != null && !isNaN(p.speed)) ? parseFloat((p.speed * 3.6).toFixed(1)) : 0
+      );
+      // Thin labels — show at most 8
+      const step = Math.max(1, Math.floor(rawLabels.length / 8));
+      var labels = rawLabels.map((l, i) => i % step === 0 ? l : '');
+    }
 
     const ctx = document.getElementById('speed-chart').getContext('2d');
 
@@ -324,7 +334,7 @@
     speedChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: sparseLabels,
+        labels: labels,
         datasets: [{
           label: 'Speed (km/h)',
           data: speeds,
