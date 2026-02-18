@@ -64,19 +64,18 @@
 
   /* ── BIG BEARING ── */
   .bearing-hero {
-    width: 100vw;
-    margin-left: -12px;
+    width: 100%;
     text-align: center;
     line-height: 0.95;
     padding: 4px 0;
   }
 
   .bearing-hero-value {
-    font-size: 38vw;
+    font-size: calc((100vw - 20px) / 3 * 1.18);
     font-weight: 900;
-    color: var(--amber);
+    color: #ffffff;
     letter-spacing: -0.04em;
-    text-shadow: 0 0 60px rgba(240,165,0,0.45);
+    text-shadow: 0 0 60px rgba(255,255,255,0.25);
     font-variant-numeric: tabular-nums;
     display: block;
     width: 100%;
@@ -164,7 +163,7 @@
   .speed-panel { text-align: center; }
 
   .speed-value {
-    font-size: clamp(5rem, 32vw, 13rem);
+    font-size: clamp(4rem, 29vw, 11rem);
     font-weight: 900;
     line-height: 1;
     color: var(--cyan);
@@ -311,7 +310,7 @@
   <p>This app needs your device's GPS to show heading and speed, and will save your track to the cloud.</p>
   <button class="btn" id="enable-btn" onclick="startGPS()">ENABLE GPS</button>
   <p id="err-msg" style="color:#ff3c3c;"></p>
-  <div class="overlay-version">VERSION 0.2</div>
+  <div class="overlay-version">VERSION 0.3</div>
 </div>
 
 <!-- Silent audio for iOS screen-awake workaround -->
@@ -321,8 +320,6 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
 </audio>
 
 <div class="container">
-  <div class="header">⚓ SAILING INSTRUMENTS</div>
-
   <!-- Full-width bearing -->
   <div class="bearing-hero">
     <span class="bearing-hero-value" id="bearing">---</span>
@@ -332,7 +329,6 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
 
   <!-- Compass + cardinal -->
   <div class="panel">
-    <div class="label">COMPASS — COURSE OVER GROUND</div>
     <div class="compass-row">
       <div class="compass-dial">
         <svg viewBox="0 0 120 120">
@@ -350,9 +346,7 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
         </svg>
       </div>
       <div class="compass-info">
-        <div class="compass-sub-label">BEARING</div>
         <div class="cardinal-display" id="cardinal">--</div>
-        <div class="compass-sub-label">DEGREES</div>
       </div>
     </div>
     <div class="acc-bar"><div class="acc-fill" id="acc-fill" style="width:0%"></div></div>
@@ -362,7 +356,6 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
 
   <!-- Speed -->
   <div class="panel cyan-accent speed-panel">
-    <div class="label">SPEED OVER GROUND</div>
     <span class="speed-value" id="speed">--.-</span>
     <div class="speed-unit">KM / HR</div>
   </div>
@@ -371,7 +364,6 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
 
   <!-- Track recording -->
   <div class="panel green-accent">
-    <div class="label">TRACK RECORDING</div>
     <div class="record-panel">
       <button class="record-btn" id="record-btn" onclick="toggleRecording()">⏺ START</button>
       <div class="record-info">
@@ -402,7 +394,7 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     </div>
   </div>
 
-  <div class="version-footer">VERSION 0.2</div>
+  <div class="version-footer">VERSION 0.3</div>
 </div>
 
 <!-- Firebase -->
