@@ -282,7 +282,6 @@
     z-index: 100; gap: 18px;
   }
 
-  .overlay h2 { font-size: 1.1rem; letter-spacing: 0.2em; color: var(--cyan); }
   .overlay p  { font-size: 0.75rem; color: var(--text-dim); line-height: 1.6; max-width: 300px; }
   .overlay-version { font-size: 0.55rem; letter-spacing: 0.3em; color: #6a9ab0; }
 
@@ -303,17 +302,77 @@
   .hidden { display: none; }
 
   .divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+  /* ── Splash animations ── */
+  @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes pulse-glow {
+    0%, 100% { text-shadow: 0 0 8px rgba(0,212,255,0.15); }
+    50%      { text-shadow: 0 0 24px rgba(0,212,255,0.5), 0 0 48px rgba(0,212,255,0.2); }
+  }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .overlay .compass-icon {
+    display: inline-block;
+    width: 60px; height: 60px;
+    animation: spin-slow 12s linear infinite, fade-in 1s ease-out;
+    vertical-align: middle;
+    margin-bottom: 8px;
+  }
+
+  .overlay h2 { font-size: 1.1rem; letter-spacing: 0.2em; color: var(--cyan); animation: pulse-glow 3.5s ease-in-out infinite; }
+
+  .overlay-tagline {
+    font-size: 0.55rem;
+    letter-spacing: 0.35em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .overlay-features {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .overlay-tracks-link {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    text-decoration: none;
+    text-transform: uppercase;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .overlay-tracks-link:hover { opacity: 1; }
 </style>
 </head>
 <body>
 
 <!-- Launch overlay -->
 <div class="overlay" id="overlay">
-  <h2>⚓ SAILING GPS</h2>
-  <p>This app needs your device's GPS to show heading and speed, and will save your track to the cloud.</p>
+  <svg class="compass-icon" viewBox="0 0 60 60" fill="none">
+    <circle cx="30" cy="30" r="28" stroke="#1a3a50" stroke-width="1.2"/>
+    <circle cx="30" cy="30" r="24" stroke="#0d2535" stroke-width="4"/>
+    <polygon points="30,6 27,30 30,34 33,30"  fill="#f0a500" opacity="0.9"/>
+    <polygon points="30,54 27,30 30,34 33,30"  fill="#2a4a5a"/>
+    <circle cx="30" cy="30" r="2.5" fill="#0a1820" stroke="#f0a500" stroke-width="1"/>
+    <text x="30" y="9"  text-anchor="middle" fill="#f0a500" font-family="Roboto Mono,monospace" font-size="5" font-weight="700">N</text>
+    <text x="54" y="32" text-anchor="middle" fill="#3a6070" font-family="Roboto Mono,monospace" font-size="4">E</text>
+    <text x="30" y="58" text-anchor="middle" fill="#3a6070" font-family="Roboto Mono,monospace" font-size="4">S</text>
+    <text x="6"  y="32" text-anchor="middle" fill="#3a6070" font-family="Roboto Mono,monospace" font-size="4">W</text>
+  </svg>
+  <h2>SAILING GPS</h2>
+  <div class="overlay-tagline">HEADING · SPEED · TRACK</div>
+  <div class="overlay-features">
+    <div>📡 GPS for live heading & speed</div>
+    <div>☁️ Track recording saved to cloud</div>
+  </div>
   <button class="btn" id="enable-btn" onclick="startGPS()">ENABLE GPS</button>
   <p id="err-msg" style="color:#ff3c3c;"></p>
-  <div class="overlay-version">VERSION 0.3.5</div>
+  <a class="overlay-tracks-link" href="tracks.html">or VIEW SAVED TRACKS →</a>
+  <div class="overlay-version">VERSION 0.3.7</div>
 </div>
 
 <!-- Silent audio for iOS screen-awake workaround -->
@@ -398,7 +457,7 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     </div>
   </div>
 
-  <div class="version-footer">VERSION 0.3.5</div>
+  <div class="version-footer">VERSION 0.3.7</div>
 </div>
 
 <!-- Firebase -->
@@ -547,6 +606,11 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     document.getElementById('err-msg').textContent = err.message;
     const s = document.getElementById('gps-status');
     s.textContent = 'ERR'; s.className = 'status-val bad blink';
+    // Restore button
+    const btn = document.getElementById('enable-btn');
+    btn.textContent = 'ENABLE GPS';
+    btn.classList.remove('blink');
+    btn.disabled = false;
   }
 
   // ── Screen-awake: Wake Lock API (Android/Chrome) + silent audio (iOS Safari) ──
@@ -606,10 +670,15 @@ EAAQARAAoAAABYAQACABAAZGF0YQAAAAA=" type="audio/wav">
   }
 
   window.startGPS = async function() {
+    const btn = document.getElementById('enable-btn');
     if (!navigator.geolocation) {
       document.getElementById('err-msg').textContent = 'Geolocation not supported.';
       return;
     }
+    // Button loading state
+    btn.textContent = 'ACQUIRING…';
+    btn.classList.add('blink');
+    btn.disabled = true;
     // Request iOS motion permission first (must be triggered by user gesture)
     await requestiOSMotion();
     requestWakeLock();
