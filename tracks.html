@@ -132,6 +132,19 @@
   .chart-header { padding: 10px 16px; border-bottom: 1px solid var(--border); }
   .chart-title { font-size: 0.6rem; letter-spacing: 0.3em; color: var(--amber); text-transform: uppercase; }
   .chart-wrap { padding: 12px; position: relative; height: 200px; }
+  .highlight-tooltip {
+    background: rgba(10,24,32,0.9);
+    border: 1px solid #f0a500;
+    color: #f0a500;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 3px 7px;
+    border-radius: 4px;
+    box-shadow: 0 0 6px rgba(240,165,0,0.3);
+    white-space: nowrap;
+  }
+  .highlight-tooltip::before { display: none; }
 </style>
 </head>
 <body>
@@ -193,6 +206,7 @@
   let speedChart     = null;
   let chartPts       = [];     // points array backing the current chart (1:1 with chart data indices)
   let highlightMarker = null;  // amber circle marker shown on map during chart hover
+  let highlightTooltip = null; // label shown beside the amber dot
 
   // ── Load session list ──
   async function loadSessions() {
@@ -363,6 +377,15 @@
             const pt  = chartPts[idx];
             if (pt && pt.lat && pt.lng) {
               const latlng = [pt.lat, pt.lng];
+              // Build label text
+              const spd = (pt.speed != null && !isNaN(pt.speed))
+                ? (pt.speed * 3.6).toFixed(1) + ' km/h' : '';
+              let timeStr = '';
+              if (pt.ts) {
+                const d = pt.ts.toDate ? pt.ts.toDate() : new Date(pt.ts.seconds * 1000);
+                timeStr = d.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              }
+              const label = [spd, timeStr].filter(Boolean).join('  ');
               if (highlightMarker) {
                 highlightMarker.setLatLng(latlng);
               } else {
@@ -370,10 +393,21 @@
                   radius: 8, color: '#f0a500', fillColor: '#f0a500', fillOpacity: 0.9, weight: 2
                 }).addTo(leafletMap);
               }
+              // Tooltip label
+              if (label) {
+                if (highlightTooltip) {
+                  highlightTooltip.setLatLng(latlng).setContent(label);
+                } else {
+                  highlightTooltip = L.tooltip({
+                    permanent: true, direction: 'right', offset: [12, 0],
+                    className: 'highlight-tooltip'
+                  }).setLatLng(latlng).setContent(label).addTo(leafletMap);
+                }
+              }
             }
-          } else if (highlightMarker) {
-            leafletMap.removeLayer(highlightMarker);
-            highlightMarker = null;
+          } else {
+            if (highlightMarker) { leafletMap.removeLayer(highlightMarker); highlightMarker = null; }
+            if (highlightTooltip) { leafletMap.removeLayer(highlightTooltip); highlightTooltip = null; }
           }
         },
         plugins: {
