@@ -171,7 +171,8 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, getDocs, orderBy, query }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import Chart from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/+esm";
+  import { Chart, registerables } from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/+esm";
+  Chart.register(...registerables);
 
   const firebaseConfig = {
     apiKey: "AIzaSyCs3kFXZmQ59CUf9IkQ7UTPRcYi45hb9co",
