@@ -164,7 +164,7 @@
     </div>
   </div>
 
-  <div class="version-footer">VERSION 0.3.5</div>
+  <div class="version-footer">VERSION 0.3.6</div>
 </div>
 
 <script type="module">
@@ -191,6 +191,8 @@
   let currentTrack   = null;   // array of point objects
   let currentSession = null;  // session metadata
   let speedChart     = null;
+  let chartPts       = [];     // points array backing the current chart (1:1 with chart data indices)
+  let highlightMarker = null;  // amber circle marker shown on map during chart hover
 
   // ── Load session list ──
   async function loadSessions() {
@@ -268,6 +270,7 @@
     } else {
       leafletMap.eachLayer(l => { if (!(l instanceof L.TileLayer)) leafletMap.removeLayer(l); });
     }
+    highlightMarker = null;
 
     const polyline = L.polyline(coords, { color: '#00d4ff', weight: 3, opacity: 0.85 }).addTo(leafletMap);
 
@@ -306,9 +309,11 @@
       // Fallback: no timestamps, just use all points with index as x axis
       const allPts = pts;
       if (!allPts.length) return;
+      chartPts = allPts;
       var labels  = allPts.map((_, i) => i % Math.max(1, Math.floor(allPts.length / 8)) === 0 ? String(i) : '');
       var speeds  = allPts.map(p => (p.speed != null && !isNaN(p.speed)) ? parseFloat((p.speed * 3.6).toFixed(1)) : 0);
     } else {
+      chartPts = validPts;
       // Use elapsed time on x axis
       const startMs = validPts[0].ts.toDate ? validPts[0].ts.toDate().getTime()
                                              : validPts[0].ts.seconds * 1000;
@@ -351,6 +356,26 @@
         responsive: true,
         maintainAspectRatio: false,
         animation: { duration: 400 },
+        interaction: { mode: 'index', intersect: false },
+        onHover(event, elements) {
+          if (elements.length && leafletMap) {
+            const idx = elements[0].index;
+            const pt  = chartPts[idx];
+            if (pt && pt.lat && pt.lng) {
+              const latlng = [pt.lat, pt.lng];
+              if (highlightMarker) {
+                highlightMarker.setLatLng(latlng);
+              } else {
+                highlightMarker = L.circleMarker(latlng, {
+                  radius: 8, color: '#f0a500', fillColor: '#f0a500', fillOpacity: 0.9, weight: 2
+                }).addTo(leafletMap);
+              }
+            }
+          } else if (highlightMarker) {
+            leafletMap.removeLayer(highlightMarker);
+            highlightMarker = null;
+          }
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
