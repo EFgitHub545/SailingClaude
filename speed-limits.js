@@ -5,6 +5,37 @@
 const CACHE_PREFIX = 'sl_';
 const CACHE_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const SAMPLE_INTERVAL = 10; // every Nth point
+const MAX_BATCH_DISTANCE_KM = 80; // TomTom limit is 100km, stay safely under
+
+/** Haversine distance in km between two points */
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/** Split an array of point indices into batches where each batch covers ≤ maxKm */
+function splitByDistance(indices, points, maxKm) {
+  const batches = [];
+  let current = [indices[0]];
+  let dist = 0;
+  for (let i = 1; i < indices.length; i++) {
+    const prev = points[indices[i - 1]];
+    const curr = points[indices[i]];
+    const leg = haversineKm(prev.lat, prev.lng, curr.lat, curr.lng);
+    if (dist + leg > maxKm && current.length >= 2) {
+      batches.push(current);
+      current = [indices[i]];
+      dist = 0;
+    } else {
+      current.push(indices[i]);
+      dist += leg;
+    }
+  }
+  if (current.length) batches.push(current);
+  return batches;
+}
 
 /** Round to 5 decimal places (~1m precision) */
 function round5(v) {
@@ -84,9 +115,9 @@ export async function fetchSpeedLimits(points, apiKey) {
     // Pre-encode the fields param — braces must be percent-encoded
     const fieldsParam = '%7BprojectedPoints%7Bproperties%7BrouteIndex%7D%7D%2Croute%7Bproperties%7BspeedLimits%7Bvalue%2Cunit%7D%7D%7D%7D';
 
-    const BATCH_SIZE = 2000;
-    for (let b = 0; b < uncachedIndices.length; b += BATCH_SIZE) {
-      const batchIndices = uncachedIndices.slice(b, b + BATCH_SIZE);
+    // Split into batches by route distance (TomTom max 100km per request)
+    const batches = splitByDistance(uncachedIndices, points, MAX_BATCH_DISTANCE_KM);
+    for (const batchIndices of batches) {
 
       // Build GeoJSON Feature array for POST body
       const geoPoints = batchIndices.map(idx => ({
