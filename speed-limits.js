@@ -5,7 +5,7 @@
 const CACHE_PREFIX = 'sl_';
 const CACHE_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const SAMPLE_INTERVAL = 10; // every Nth point
-const MAX_BATCH_DISTANCE_KM = 80; // TomTom limit is 100km, stay safely under
+const MAX_BATCH_DISTANCE_KM = 60; // TomTom limit is 100km; road distance > straight-line
 
 /** Haversine distance in km between two points */
 function haversineKm(lat1, lon1, lat2, lon2) {
