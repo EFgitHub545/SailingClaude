@@ -79,23 +79,26 @@ export async function fetchSpeedLimits(points, apiKey) {
     uncachedIndices.push(idx);
   }
 
-  // 3. API call for uncached points
+  // 3. API call for uncached points (POST to avoid URL length limits)
   if (uncachedIndices.length > 0) {
-    // Build batches of up to 5000 points
-    const BATCH_SIZE = 5000;
+    const BATCH_SIZE = 2000;
     for (let b = 0; b < uncachedIndices.length; b += BATCH_SIZE) {
       const batchIndices = uncachedIndices.slice(b, b + BATCH_SIZE);
-      const pointsStr = batchIndices
+      const postBody = batchIndices
         .map(idx => `${points[idx].lng},${points[idx].lat}`)
         .join(';');
 
-      const url = `https://api.tomtom.com/snapToRoads/1?points=${pointsStr}`
-        + `&fields=${encodeURIComponent('speedLimits{value,unit}')}`
+      const url = `https://api.tomtom.com/snapToRoads/1`
+        + `?fields=${encodeURIComponent('speedLimits{value,unit}')}`
         + `&vehicleType=PassengerCar`
         + `&key=${apiKey}`;
 
       try {
-        const resp = await fetch(url);
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `points=${postBody}`
+        });
         if (!resp.ok) {
           console.error('TomTom API error:', resp.status, await resp.text());
           continue;
