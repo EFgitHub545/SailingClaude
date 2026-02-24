@@ -89,7 +89,7 @@ export async function fetchSpeedLimits(points, apiKey) {
         .join(';');
 
       const url = `https://api.tomtom.com/snapToRoads/1`
-        + `?fields=${encodeURIComponent('speedLimits{value,unit}')}`
+        + `?fields=speedLimits{value,unit}`
         + `&vehicleType=PassengerCar`
         + `&key=${apiKey}`;
 
