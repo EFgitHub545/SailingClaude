@@ -129,8 +129,53 @@
     opacity: 0.5;
   }
   .chart-panel.visible { display: block; }
-  .chart-header { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  .chart-header {
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
   .chart-title { font-size: 0.6rem; letter-spacing: 0.3em; color: var(--amber); text-transform: uppercase; }
+
+  /* Speed limit button */
+  .speed-limit-btn {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.5rem; letter-spacing: 0.15em; font-weight: 700;
+    color: var(--red); background: transparent;
+    border: 1px solid var(--red); border-radius: 4px;
+    padding: 3px 8px; cursor: pointer;
+    text-transform: uppercase; transition: all 0.2s;
+    display: none;
+  }
+  .speed-limit-btn:hover { background: rgba(255,60,60,0.12); }
+  .speed-limit-btn.visible { display: inline-block; }
+  .speed-limit-btn.loading {
+    opacity: 0.5; pointer-events: none;
+    animation: pulse-btn 1s ease-in-out infinite;
+  }
+  @keyframes pulse-btn { 0%,100%{ opacity:0.5 } 50%{ opacity:0.9 } }
+
+  /* API key prompt */
+  .api-key-bar {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 16px; display: none; gap: 8px; align-items: center;
+  }
+  .api-key-bar.visible { display: flex; }
+  .api-key-bar label {
+    font-size: 0.5rem; letter-spacing: 0.15em; color: var(--text-dim);
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .api-key-bar input {
+    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--amber); font-family: 'Roboto Mono', monospace;
+    font-size: 0.6rem; padding: 4px 8px; outline: none;
+  }
+  .api-key-bar input:focus { border-color: var(--cyan); }
+  .api-key-bar button {
+    font-family: 'Roboto Mono', monospace; font-size: 0.5rem;
+    color: var(--cyan); background: transparent; border: 1px solid var(--cyan);
+    border-radius: 4px; padding: 4px 10px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .api-key-bar button:hover { background: rgba(0,212,255,0.1); }
   .chart-wrap { padding: 12px; position: relative; height: 200px; }
   .highlight-tooltip {
     background: rgba(10,24,32,0.9);
@@ -167,17 +212,25 @@
     <div class="stats-row" id="stats-row"></div>
   </div>
 
+  <!-- TomTom API key bar -->
+  <div class="api-key-bar" id="api-key-bar">
+    <label>TomTom API Key</label>
+    <input type="text" id="tomtom-key-input" placeholder="Enter key…">
+    <button id="save-key-btn">Save</button>
+  </div>
+
   <!-- Speed/time chart -->
   <div class="chart-panel" id="chart-panel">
     <div class="chart-header">
       <span class="chart-title">SPEED OVER TIME</span>
+      <button class="speed-limit-btn" id="speed-limit-btn">⚡ Speed Limits</button>
     </div>
     <div class="chart-wrap">
       <canvas id="speed-chart"></canvas>
     </div>
   </div>
 
-  <div class="version-footer">VERSION 0.3.7</div>
+  <div class="version-footer">VERSION 0.4.0</div>
 </div>
 
 <script type="module">
@@ -186,6 +239,7 @@
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { Chart, registerables } from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/+esm";
   Chart.register(...registerables);
+  import { fetchSpeedLimits } from "./speed-limits.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCs3kFXZmQ59CUf9IkQ7UTPRcYi45hb9co",
@@ -207,6 +261,7 @@
   let chartPts       = [];     // points array backing the current chart (1:1 with chart data indices)
   let highlightMarker = null;  // amber circle marker shown on map during chart hover
   let highlightTooltip = null; // label shown beside the amber dot
+  let currentLimits   = null;  // speed limit array matching chartPts indices
 
   // ── Load session list ──
   async function loadSessions() {
@@ -262,10 +317,17 @@
 
       currentTrack   = pts;
       currentSession = { id: sessionId, startDate };
+      currentLimits  = null;
 
       drawMap(pts);
       drawStats(pts);
       drawSpeedChart(pts);
+
+      // Show speed limit button if API key is set
+      const slBtn = document.getElementById('speed-limit-btn');
+      slBtn.classList.toggle('visible', !!localStorage.getItem('tomtom_api_key'));
+      slBtn.textContent = '⚡ Speed Limits';
+      slBtn.classList.remove('loading');
     } catch(e) {
       console.error(e);
     }
@@ -380,12 +442,14 @@
               // Build label text
               const spd = (pt.speed != null && !isNaN(pt.speed))
                 ? (pt.speed * 3.6).toFixed(1) + ' km/h' : '';
+              const limitStr = (currentLimits && currentLimits[idx] != null)
+                ? currentLimits[idx] + ' limit' : '';
               let timeStr = '';
               if (pt.ts) {
                 const d = pt.ts.toDate ? pt.ts.toDate() : new Date(pt.ts.seconds * 1000);
                 timeStr = d.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
               }
-              const label = [spd, timeStr].filter(Boolean).join('  ');
+              const label = [spd, limitStr, timeStr].filter(Boolean).join('  ');
               if (highlightMarker) {
                 highlightMarker.setLatLng(latlng);
               } else {
@@ -411,7 +475,10 @@
           }
         },
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: false,
+            labels: { color: '#3a6070', font: { family: 'Roboto Mono', size: 9 } }
+          },
           tooltip: {
             backgroundColor: '#0a1820',
             borderColor: '#1a3a50',
@@ -419,7 +486,12 @@
             titleColor: '#3a6070',
             bodyColor: '#f0a500',
             callbacks: {
-              label: ctx => ctx.parsed.y.toFixed(1) + ' km/h'
+              label: ctx => {
+                if (ctx.dataset.label === 'Speed Limit') {
+                  return ctx.parsed.y != null ? ctx.parsed.y + ' km/h limit' : '';
+                }
+                return ctx.parsed.y.toFixed(1) + ' km/h';
+              }
             }
           }
         },
@@ -469,6 +541,76 @@
     if (mins < 60) return `(${mins}m)`;
     return `(${Math.floor(mins/60)}h ${mins%60}m)`;
   }
+
+  // ── TomTom API key management ──
+  const apiKeyBar   = document.getElementById('api-key-bar');
+  const apiKeyInput = document.getElementById('tomtom-key-input');
+  const saveKeyBtn  = document.getElementById('save-key-btn');
+
+  // Show key bar if no key saved
+  if (!localStorage.getItem('tomtom_api_key')) {
+    apiKeyBar.classList.add('visible');
+  }
+  apiKeyInput.value = localStorage.getItem('tomtom_api_key') || '';
+
+  saveKeyBtn.addEventListener('click', () => {
+    const key = apiKeyInput.value.trim();
+    if (key) {
+      localStorage.setItem('tomtom_api_key', key);
+      apiKeyBar.classList.remove('visible');
+      // Show speed limit button if a track is loaded
+      if (currentTrack) {
+        document.getElementById('speed-limit-btn').classList.add('visible');
+      }
+    }
+  });
+
+  // ── Speed Limits button ──
+  document.getElementById('speed-limit-btn').addEventListener('click', async () => {
+    const apiKey = localStorage.getItem('tomtom_api_key');
+    if (!apiKey) {
+      apiKeyBar.classList.add('visible');
+      return;
+    }
+    if (!chartPts.length) return;
+
+    const btn = document.getElementById('speed-limit-btn');
+    btn.classList.add('loading');
+    btn.textContent = '⏳ Loading…';
+
+    try {
+      const limits = await fetchSpeedLimits(chartPts, apiKey);
+      currentLimits = limits;
+
+      // Add or update the speed limit dataset on the chart
+      if (speedChart) {
+        // Remove existing speed limit dataset if present
+        const existingIdx = speedChart.data.datasets.findIndex(ds => ds.label === 'Speed Limit');
+        if (existingIdx !== -1) speedChart.data.datasets.splice(existingIdx, 1);
+
+        speedChart.data.datasets.push({
+          label: 'Speed Limit',
+          data: limits,
+          borderColor: '#ff3c3c',
+          borderWidth: 1.5,
+          borderDash: [6, 3],
+          pointRadius: 0,
+          fill: false,
+          tension: 0.1,
+          stepped: 'before'
+        });
+        speedChart.update();
+      }
+
+      btn.textContent = '✓ Limits Shown';
+      btn.classList.remove('loading');
+    } catch (err) {
+      console.error('Speed limit fetch failed:', err);
+      btn.textContent = '✗ Error';
+      btn.classList.remove('loading');
+      setTimeout(() => { btn.textContent = '⚡ Speed Limits'; }, 3000);
+    }
+  });
 
   // Kick off
   loadSessions();
