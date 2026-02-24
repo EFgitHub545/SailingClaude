@@ -79,24 +79,35 @@ export async function fetchSpeedLimits(points, apiKey) {
     uncachedIndices.push(idx);
   }
 
-  // 3. API call for uncached points (POST to avoid URL length limits)
+  // 3. API call for uncached points (POST with JSON body)
   if (uncachedIndices.length > 0) {
+    // Pre-encode the fields param — braces must be percent-encoded
+    const fieldsParam = '%7BprojectedPoints%7Bproperties%7BrouteIndex%7D%7D%2Croute%7Bproperties%7BspeedLimits%7Bvalue%2Cunit%7D%7D%7D%7D';
+
     const BATCH_SIZE = 2000;
     for (let b = 0; b < uncachedIndices.length; b += BATCH_SIZE) {
       const batchIndices = uncachedIndices.slice(b, b + BATCH_SIZE);
-      const postBody = batchIndices
-        .map(idx => `${points[idx].lng},${points[idx].lat}`)
-        .join(';');
+
+      // Build GeoJSON Feature array for POST body
+      const geoPoints = batchIndices.map(idx => ({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [points[idx].lng, points[idx].lat]
+        },
+        properties: {}
+      }));
 
       const url = `https://api.tomtom.com/snapToRoads/1`
-        + `?vehicleType=PassengerCar`
+        + `?fields=${fieldsParam}`
+        + `&vehicleType=PassengerCar`
         + `&key=${apiKey}`;
 
       try {
         const resp = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `points=${postBody}`
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ points: geoPoints })
         });
         if (!resp.ok) {
           console.error('TomTom API error:', resp.status, await resp.text());
@@ -104,64 +115,34 @@ export async function fetchSpeedLimits(points, apiKey) {
         }
         const data = await resp.json();
 
-        // Parse response — map projected points back to our input indices
         if (data.route && data.projectedPoints) {
-          // Build a map from projected point index → speed limit
-          // Each projected point has properties.index (original input index within the batch)
-          // Each route leg has speed limits
-          const projLimits = new Map();
-
-          // Extract speed limits from route segments
-          if (data.route) {
-            for (const segment of data.route) {
-              if (segment.properties && segment.properties.speedLimits) {
-                for (const sl of segment.properties.speedLimits) {
-                  // Speed limit applies to this segment
-                  const limitKmh = sl.unit === 'MPH' ? sl.value * 1.60934 : sl.value;
-                  // Store on segment — we'll map via projected points below
-                  if (!segment._limitKmh) segment._limitKmh = limitKmh;
-                }
-              }
-            }
-          }
-
-          // Map projected points to speed limits
-          // projectedPoints[i] corresponds to input point i in the batch
+          // Map each projected point to its route segment's speed limit
           for (let pi = 0; pi < data.projectedPoints.length; pi++) {
             const pp = data.projectedPoints[pi];
-            const batchIdx = pp.properties?.index ?? pi;
-            const origIdx = batchIndices[batchIdx];
+            const routeIdx = pp.properties?.routeIndex ?? 0;
+            const origIdx = batchIndices[pi];
             if (origIdx === undefined) continue;
 
-            // Find which route segment this projected point belongs to
-            // Use routeIndex if available
-            const routeIdx = pp.properties?.routeIndex ?? 0;
             const segment = data.route[routeIdx];
-            let limitKmh = null;
+            const sl = segment?.properties?.speedLimits;
+            if (!sl || sl.value == null) continue;
 
-            if (segment && segment.properties && segment.properties.speedLimits) {
-              const sl = segment.properties.speedLimits[0];
-              if (sl) {
-                limitKmh = sl.unit === 'MPH'
-                  ? Math.round(sl.value * 1.60934)
-                  : sl.value;
-              }
-            }
+            const limitKmh = sl.unit === 'MPH'
+              ? Math.round(sl.value * 1.60934)
+              : sl.value;
 
-            if (limitKmh !== null) {
-              results[origIdx] = limitKmh;
+            results[origIdx] = limitKmh;
 
-              // 4. Cache store
-              const p = points[origIdx];
-              const key = cacheKey(p.lat, p.lng);
-              try {
-                localStorage.setItem(key, JSON.stringify({
-                  limit: limitKmh,
-                  unit: 'kmph',
-                  fetched: Date.now()
-                }));
-              } catch { /* storage full — skip */ }
-            }
+            // 4. Cache store
+            const p = points[origIdx];
+            const key = cacheKey(p.lat, p.lng);
+            try {
+              localStorage.setItem(key, JSON.stringify({
+                limit: limitKmh,
+                unit: 'kmph',
+                fetched: Date.now()
+              }));
+            } catch { /* storage full — skip */ }
           }
         }
       } catch (err) {
